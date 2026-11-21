@@ -1,4 +1,4 @@
-# Lance tous les exemples et s'arrête au premier échec.
+﻿# Lance tous les exemples et s'arrête au premier échec.
 # Chaque exemple vérifie lui-même ce que la documentation affirme (lignes ✓ / ✗) ;
 # son code de sortie est le nombre de vérifications en échec.
 #   ./verifier.ps1
