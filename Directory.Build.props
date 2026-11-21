@@ -1,11 +1,11 @@
 <Project>
-  <!-- Réglages communs à toute la solution : .NET 11, C# 15 (la version par défaut pour net11.0). -->
+  <!-- Settings shared by the whole solution: .NET 11, C# 15 (the default language version for net11.0). -->
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <!-- Un switch qui oublie un cas d'union ou de hiérarchie fermée n'est qu'un avertissement (CS8509) :
-         on le transforme en erreur, c'est tout l'intérêt de ces deux fonctionnalités. -->
+    <!-- A switch that forgets a case of a union or a closed hierarchy is only a warning (CS8509):
+         turn it into an error, that is the whole point of these two features. -->
     <WarningsAsErrors>$(WarningsAsErrors);CS8509</WarningsAsErrors>
   </PropertyGroup>
 </Project>

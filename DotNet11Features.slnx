@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DotNet11Features.Benchmarks/DotNet11Features.Benchmarks.csproj" />
+    <Project Path="src/DotNet11Features.Examples/DotNet11Features.Examples.csproj" />
+    <Project Path="src/DotNet11Features.MemorySafety/DotNet11Features.MemorySafety.csproj" />
+  </Folder>
+</Solution>

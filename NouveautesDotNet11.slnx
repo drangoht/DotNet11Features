@@ -1,7 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/NouveautesDotNet11.Benchmarks/NouveautesDotNet11.Benchmarks.csproj" />
-    <Project Path="src/NouveautesDotNet11.Exemples/NouveautesDotNet11.Exemples.csproj" />
-    <Project Path="src/NouveautesDotNet11.SecuriteMemoire/NouveautesDotNet11.SecuriteMemoire.csproj" />
-  </Folder>
-</Solution>

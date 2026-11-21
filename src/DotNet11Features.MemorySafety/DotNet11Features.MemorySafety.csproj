@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Example 15: the new C# 15 memory safety model is in PREVIEW.
+    It needs three settings, hence this separate project: the rest of the solution stays on stable C# 15.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <LangVersion>preview</LangVersion>
+    <Features>$(Features);updated-memory-safety-rules</Features>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+</Project>

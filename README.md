@@ -1,179 +1,183 @@
-# NouveautesDotNet11 — les nouveautés de .NET 11 et C# 15, exemple par exemple
+# NouveautesDotNet11 — what's new in .NET 11 and C# 15, example by example
 
-Seize exemples exécutables, chacun avec **le code d'avant**, **le code .NET 11**, ce qui change vraiment, des
-mesures quand c'est pertinent, et les pièges rencontrés en l'écrivant.
+🇫🇷 [Version française](README.fr.md)
 
-Testé avec le SDK `11.0.100`, la version finale de .NET 11 sortie le 10 novembre 2026, épinglé dans `global.json`.
-C# 15 est la version par défaut pour `net11.0` : aucun réglage à ajouter, sauf pour l'exemple 15 (preview).
+Sixteen runnable examples, each with **the code from before**, **the .NET 11 code**, what really changes,
+measurements where relevant, and the pitfalls we hit while writing it.
 
-> Le **Runtime Async**, la plus grosse nouveauté du runtime, a son propre dépôt :
-> [RuntimeAsyncDemo](https://github.com/drangoht/RuntimeAsyncDemo) (machine à états contre runtime, benchmarks,
-> pile d'appels). Ce dépôt-ci couvre **tout le reste**.
+Tested with SDK `11.0.100`, the final release of .NET 11 shipped on November 10, 2026, pinned in `global.json`.
+C# 15 is the default language version for `net11.0`: nothing to add, except for example 15 (preview).
 
-**Chaque affirmation est vérifiée à l'exécution** : les exemples affichent `✓` ou `✗` et le programme se termine avec
-le nombre d'échecs. `./verifier.ps1` lance tout.
+> **Runtime Async**, the biggest runtime change, has its own repository:
+> [RuntimeAsyncDemo](https://github.com/drangoht/RuntimeAsyncDemo) (state machine versus runtime, benchmarks,
+> call stacks). This repository covers **everything else**.
+
+**Every claim is checked at runtime**: the examples print `✓` or `✗` and the program exits with the number of
+failures. `./verify.ps1` runs everything.
+
+Code and console output are in English; every example sheet exists in English ([`docs/en`](docs/en)) and in French
+([`docs/fr`](docs/fr)).
 
 ---
 
-## 1. Sommaire
+## 1. Contents
 
-### Langage : C# 15
+### Language: C# 15
 
-| # | Nouveauté | Avant | Après | Doc |
+| # | Feature | Before | After | Doc |
 |---|---|---|---|---|
-| 01 | **Unions** | classe enveloppe ou `OneOf<…>`, bras `_ => throw` | `union MoyenPaiement(Carte, Virement, BonAchat);`, `switch` vérifié | [01-unions](docs/01-unions.md) |
-| 02 | **Hiérarchies fermées** | `abstract` + `_ => throw new UnreachableException()` | `closed record EtatCommande;` | [02-hierarchies-fermees](docs/02-hierarchies-fermees.md) |
-| 03 | **Arguments de collection** | `new HashSet<string>(comparateur)` + boucle | `[with(StringComparer.OrdinalIgnoreCase), .. items]` | [03-arguments-collection](docs/03-arguments-collection.md) |
-| 04 | **Indexeurs d'extension** | `json.GetProperty("a").GetProperty("b")` | `json["a"]["b"]` | [04-indexeurs-extension](docs/04-indexeurs-extension.md) |
-| 05 | **`break` / `continue` étiquetés** | drapeau booléen ou `goto` | `allees: for (…) { … break allees; }` | [05-break-continue-etiquetes](docs/05-break-continue-etiquetes.md) |
-| 15 | **Sécurité mémoire** *(preview)* | méthode entière `unsafe` | `unsafe(*p)` sur la seule expression dangereuse | [15-securite-memoire](docs/15-securite-memoire.md) |
+| 01 | **Unions** | wrapper class or `OneOf<…>`, `_ => throw` arm | `union PaymentMethod(Card, BankTransfer, Voucher);`, checked `switch` | [01-unions](docs/en/01-unions.md) |
+| 02 | **Closed hierarchies** | `abstract` + `_ => throw new UnreachableException()` | `closed record OrderState;` | [02-closed-hierarchies](docs/en/02-closed-hierarchies.md) |
+| 03 | **Collection arguments** | `new HashSet<string>(comparer)` + loop | `[with(StringComparer.OrdinalIgnoreCase), .. items]` | [03-collection-arguments](docs/en/03-collection-arguments.md) |
+| 04 | **Extension indexers** | `json.GetProperty("a").GetProperty("b")` | `json["a"]["b"]` | [04-extension-indexers](docs/en/04-extension-indexers.md) |
+| 05 | **Labeled `break` / `continue`** | boolean flag or `goto` | `aisles: for (…) { … break aisles; }` | [05-labeled-break-continue](docs/en/05-labeled-break-continue.md) |
+| 15 | **Memory safety** *(preview)* | whole method `unsafe` | `unsafe(*p)` on the one dangerous expression | [15-memory-safety](docs/en/15-memory-safety.md) |
 
-### Bibliothèques
+### Libraries
 
-| # | Nouveauté | Avant | Après | Doc |
+| # | Feature | Before | After | Doc |
 |---|---|---|---|---|
-| 06 | **`Process.RunAndCaptureTextAsync`** | ~14 lignes et un piège d'interblocage | `await Process.RunAndCaptureTextAsync("git", ["status"])` | [06-process](docs/06-process.md) |
-| 07 | **Zstandard intégré** | paquet tiers + DLL native | `new ZstandardStream(…)`, dictionnaires entraînés | [07-zstandard](docs/07-zstandard.md) |
-| 08 | **LINQ `FullJoin`** et jointures sans sélecteur | GroupJoin + SelectMany + DefaultIfEmpty + Concat | `catalogue.FullJoin(stock, a => a.Sku, s => s.Sku)` | [08-jointures-linq](docs/08-jointures-linq.md) |
-| 09 | **`StringStream`, `ReadOnlyMemoryStream`…** | `new MemoryStream(Encoding.UTF8.GetBytes(s))` | `new StringStream(s, Encoding.UTF8)`, sans copie | [09-flux](docs/09-flux.md) |
-| 10 | **JSON : unions, hiérarchies fermées, nommage par type** | `JsonConverter` maison, liste de `[JsonDerivedType]` | `[JsonUnion(TypeClassifier = …)]`, `InferClosedTypePolymorphism` | [10-json-unions](docs/10-json-unions.md) |
-| 11 | **JSON Lines** | boucle `SerializeAsync` + `\n` | `SerializeAsyncEnumerable(…, topLevelValues: true)` | [11-json-lines](docs/11-json-lines.md) |
-| 12 | **Nombres** | `0.1 + 0.2 ≠ 0.3`, découpage manuel, `NextBytes` | `Decimal64`, `TryParsePartial`, `NextInteger<T>` | [12-nombres](docs/12-nombres.md) |
-| 13 | **Texte et Unicode** | `Contains(rune.ToString())`, `\r?$` | `Contains(rune)`, `Utf16.IsValid`, `RegexOptions.AnyNewLine` | [13-texte](docs/13-texte.md) |
-| 14 | **`EqualityComparer<T>.Create(clé)`, `BitArray`** | une classe `IEqualityComparer<T>` | `EqualityComparer<Contact>.Create(c => c?.Email)` | [14-comparateurs-bitarray](docs/14-comparateurs-bitarray.md) |
+| 06 | **`Process.RunAndCaptureTextAsync`** | ~14 lines and a deadlock trap | `await Process.RunAndCaptureTextAsync("git", ["status"])` | [06-process](docs/en/06-process.md) |
+| 07 | **Built-in Zstandard** | third-party package + native DLL | `new ZstandardStream(…)`, trained dictionaries | [07-zstandard](docs/en/07-zstandard.md) |
+| 08 | **LINQ `FullJoin`** and selector-less joins | GroupJoin + SelectMany + DefaultIfEmpty + Concat | `catalog.FullJoin(stock, a => a.Sku, s => s.Sku)` | [08-linq-joins](docs/en/08-linq-joins.md) |
+| 09 | **`StringStream`, `ReadOnlyMemoryStream`…** | `new MemoryStream(Encoding.UTF8.GetBytes(s))` | `new StringStream(s, Encoding.UTF8)`, no copy | [09-streams](docs/en/09-streams.md) |
+| 10 | **JSON: unions, closed hierarchies, per-type naming** | home-made `JsonConverter`, list of `[JsonDerivedType]` | `[JsonUnion(TypeClassifier = …)]`, `InferClosedTypePolymorphism` | [10-json-unions](docs/en/10-json-unions.md) |
+| 11 | **JSON Lines** | `SerializeAsync` loop + `\n` | `SerializeAsyncEnumerable(…, topLevelValues: true)` | [11-json-lines](docs/en/11-json-lines.md) |
+| 12 | **Numbers** | `0.1 + 0.2 ≠ 0.3`, manual parsing, `NextBytes` | `Decimal64`, `TryParsePartial`, `NextInteger<T>` | [12-numbers](docs/en/12-numbers.md) |
+| 13 | **Text and Unicode** | `Contains(rune.ToString())`, `\r?$` | `Contains(rune)`, `Utf16.IsValid`, `RegexOptions.AnyNewLine` | [13-text](docs/en/13-text.md) |
+| 14 | **`EqualityComparer<T>.Create(key)`, `BitArray`** | an `IEqualityComparer<T>` class | `EqualityComparer<Contact>.Create(c => c?.Email)` | [14-comparers-bitarray](docs/en/14-comparers-bitarray.md) |
 
 ### SDK
 
-| # | Nouveauté | Avant | Après | Doc |
+| # | Feature | Before | After | Doc |
 |---|---|---|---|---|
-| 16 | **`#:include` dans les applications en un fichier** | un seul fichier, ou conversion en projet | `#:include modeles.cs` | [16-applications-fichier](docs/16-applications-fichier.md) |
+| 16 | **`#:include` in file-based apps** | a single file, or convert to a project | `#:include models.cs` | [16-file-based-apps](docs/en/16-file-based-apps.md) |
 
-### Comment chaque fiche est construite
+### How each sheet is built
 
-1. **L'idée expliquée simplement**, avec une image du quotidien quand c'est utile ;
-2. **Comment on faisait avant**, le vrai code, avec ses défauts ;
-3. **Ce que change .NET 11**, avec un schéma Mermaid quand le mécanisme s'y prête ;
-4. **Côte à côte** avant / après ;
-5. **Résultats** : la sortie réelle de l'exemple et, quand c'est pertinent, des benchmarks ;
-6. **Pièges et limites**, dont ceux rencontrés en écrivant le code.
-
----
-
-## 2. Ce qu'il faut retenir
-
-- **Les unions et les hiérarchies fermées** sont la nouveauté qui changera le plus la façon d'écrire du C# : le
-  compilateur vérifie enfin qu'un `switch` traite tous les cas. Passez **CS8509 en erreur** pour en profiter
-  (voir `Directory.Build.props`).
-- **Une union de types valeur boxe** (24 octets pour un `int`). Une union de classes ne coûte rien de plus qu'un
-  `object`.
-- **Un changement de comportement à tester avant de migrer** : `(decimal)1.23` vaut maintenant
-  `1.2299999999999999822364316060` au lieu de `1.23` ([exemple 12](docs/12-nombres.md#2-️-changement-de-comportement--decimalundouble)).
-- **Zstandard n'est pas magique** face au GZip de .NET (déjà rapide grâce à zlib-ng) : son niveau par défaut est
-  5× plus rapide mais produit des fichiers plus gros. Son vrai atout est le **dictionnaire** pour les petits messages
-  (×4 en taille, ×1,8 en vitesse).
-- **Les nouveaux flux** (`StringStream`…) suppriment des copies entières de données : −1,2 Mo et −27 % de temps pour
-  désérialiser 1,2 Mo de JSON depuis une chaîne.
-- **Plusieurs nouveautés sont surtout de la lisibilité**, sans gain de performance mesurable :
-  `EqualityComparer<T>.Create`, indexeurs d'extension, `break` étiqueté. `FullJoin` est même plus lent qu'une jointure
-  manuelle bien écrite.
+1. **The idea, simply**, with an everyday image when it helps;
+2. **How we did it before**, the real code, with its flaws;
+3. **What .NET 11 changes**, with a Mermaid diagram when the mechanism lends itself to one;
+4. **Side by side** before / after;
+5. **Results**: the actual output of the example and, where relevant, benchmarks;
+6. **Pitfalls and limits**, including the ones we hit while writing the code.
 
 ---
 
-## 3. Lancer
+## 2. Key takeaways
+
+- **Unions and closed hierarchies** are the change that will most affect how C# is written: the compiler finally
+  checks that a `switch` handles every case. Turn **CS8509 into an error** to benefit from it (see
+  `Directory.Build.props`).
+- **A union of value types boxes** (24 bytes for an `int`). A union of classes allocates nothing and costs about as
+  much as an `object`.
+- **A behavior change to test before migrating**: `(decimal)1.23` is now `1.2299999999999999822364316060` instead of
+  `1.23` ([example 12](docs/en/12-numbers.md)).
+- **Zstandard is not magic** against .NET's GZip (already fast thanks to zlib-ng): its default level is 5× faster but
+  produces bigger files. Its real strength is the **dictionary** for small messages (×4 in size, ×1.9 in speed).
+- **The new streams** (`StringStream`…) remove whole copies of data: −1.1 MB and −28 % time to deserialize 1.1 MB of
+  JSON from a string.
+- **Several features are mostly about readability**, with no measurable performance gain:
+  `EqualityComparer<T>.Create`, extension indexers, labeled `break`. `FullJoin` is even slower than a well-written
+  manual join.
+
+---
+
+## 3. Run
 
 ```bash
-# Tout vérifier (exemples 01-14, puis 15 et 16)
-./verifier.ps1
+# Check everything (examples 01-14, then 15 and 16)
+./verify.ps1
 
-# Les exemples 01 à 14, tous ou un seul (par numéro ou par nom)
-dotnet run -c Release --project src/NouveautesDotNet11.Exemples
-dotnet run -c Release --project src/NouveautesDotNet11.Exemples -- unions
-dotnet run -c Release --project src/NouveautesDotNet11.Exemples -- 7
-dotnet run -c Release --project src/NouveautesDotNet11.Exemples -- liste
+# Examples 01 to 14, all or one (by number or name)
+dotnet run -c Release --project src/DotNet11Features.Examples
+dotnet run -c Release --project src/DotNet11Features.Examples -- unions
+dotnet run -c Release --project src/DotNet11Features.Examples -- 7
+dotnet run -c Release --project src/DotNet11Features.Examples -- list
 
-# Exemple 15 (C# 15 preview, projet séparé)
-dotnet run -c Release --project src/NouveautesDotNet11.SecuriteMemoire
+# Example 15 (C# 15 preview, separate project)
+dotnet run -c Release --project src/DotNet11Features.MemorySafety
 
-# Exemple 16 (application en un fichier, sans projet)
-dotnet run appli-fichier/rapport.cs -- Lyon
+# Example 16 (file-based app, no project)
+dotnet run file-based-app/report.cs -- Lyon
 
-# Benchmarks (BenchmarkDotNet) : tous en job court (~6 min), ou une seule classe
-dotnet run -c Release --project src/NouveautesDotNet11.Benchmarks -- --filter * --job short
-dotnet run -c Release --project src/NouveautesDotNet11.Benchmarks -- --filter *Flux*
+# Benchmarks (BenchmarkDotNet): all in short job (~6 min), or a single class
+dotnet run -c Release --project src/DotNet11Features.Benchmarks -- --filter * --job short
+dotnet run -c Release --project src/DotNet11Features.Benchmarks -- --filter *Stream*
 ```
 
 ---
 
-## 4. Résultats mesurés
+## 4. Measured results
 
-BenchmarkDotNet 0.16.0-preview.2, `--job short` (3 itérations), SDK .NET 11.0.100 / runtime 11.0.0, AMD Ryzen 7
-9800X3D, Windows 11, mesuré le 2026-11-21. Le job court donne des ordres de grandeur fiables mais des marges d'erreur
-larges : relancez sans `--job short` pour des chiffres définitifs.
+BenchmarkDotNet 0.16.0-preview.2, `--job short` (3 iterations) unless stated otherwise, SDK .NET 11.0.100 / runtime
+11.0.0, AMD Ryzen 7 9800X3D, Windows 11, measured on 2026-11-21. The short job gives reliable orders of magnitude but
+wide error margins: run again without `--job short` for final numbers.
 
-### Unions (exemple 01), 1 000 valeurs
+### Unions (example 01), 1,000 values (full job)
 
-| Méthode | Temps | Mémoire |
+| Method | Time | Memory |
 |---|---:|---:|
-| `object[]` + `switch` avec `_ => throw` | 1,79 µs | 0 |
-| union de classes + `switch` exhaustif | 1,78 µs | 0 |
-| `int` seul | 0,21 µs | 0 |
-| `int` rangé dans une union | 1,35 µs | 24 000 o |
+| `object[]` + `switch` with `_ => throw` | 1.74 µs | 0 |
+| union of classes + exhaustive `switch` | 1.85 µs | 0 |
+| `int` alone (short job) | 0.21 µs | 0 |
+| `int` stored in a union (short job) | 1.27 µs | 24,000 B |
 
-### Zstandard (exemple 07)
+### Zstandard (example 07)
 
-| Compression de 4,6 Mo de JSON | Temps | Taille (démo) |
+| Compressing 4.5 MB of JSON | Time | Size (demo) |
 |---|---:|---:|
-| GZip (Optimal) | 21,3 ms | 340 Ko |
-| Brotli (Optimal) | 14,7 ms | 393 Ko |
-| Zstandard (Optimal) | **4,0 ms** | 438 Ko |
-| Zstandard (qualité 9) | 29,5 ms | 320 Ko |
+| GZip (Optimal) | 20.1 ms | 338 KB |
+| Brotli (Optimal) | 13.7 ms | 395 KB |
+| Zstandard (Optimal) | **4.1 ms** | 434 KB |
+| Zstandard (quality 9) | 29.2 ms | 319 KB |
 
-| 1 000 messages de 240 octets | Temps | Taille moyenne |
+| 1,000 messages of 233 bytes | Time | Average size |
 |---|---:|---:|
-| Zstandard sans dictionnaire | 4,07 ms | 166 o |
-| Zstandard avec dictionnaire | **2,21 ms** | **45 o** |
+| Zstandard without dictionary | 3.81 ms | 164 B |
+| Zstandard with dictionary | **1.96 ms** | **45 B** |
 
-### Jointures LINQ (exemple 08), 10 000 clients × 30 000 commandes
+### LINQ joins (example 08), 10,000 customers × 30,000 orders
 
-| Méthode | Temps | Mémoire |
+| Method | Time | Memory |
 |---|---:|---:|
-| GroupJoin + SelectMany + DefaultIfEmpty | 2,35 ms | 3,96 Mo |
-| LeftJoin (.NET 10) | 2,36 ms | 2,84 Mo |
-| Jointure complète manuelle (avec `HashSet`) | 2,62 ms | 4,48 Mo |
-| FullJoin (.NET 11) | 4,83 ms | 3,49 Mo |
+| GroupJoin + SelectMany + DefaultIfEmpty | 2.26 ms | 3.96 MB |
+| LeftJoin (.NET 10) | 2.14 ms | 2.84 MB |
+| Manual full join (with a `HashSet`) | 1.70 ms | 4.48 MB |
+| FullJoin (.NET 11) | 3.44 ms | 3.49 MB |
 
-### Flux (exemple 09) : désérialiser 1,2 Mo de JSON depuis une chaîne
+### Streams (example 09): deserialize 1.1 MB of JSON from a string
 
-| Méthode | Temps | Mémoire |
+| Method | Time | Memory |
 |---|---:|---:|
-| `MemoryStream(Encoding.UTF8.GetBytes(json))` | 5,69 ms | 5,47 Mo |
-| `StringStream(json, Encoding.UTF8)` | **4,13 ms** | **4,31 Mo** |
+| `MemoryStream(Encoding.UTF8.GetBytes(json))` | 5.73 ms | 5.45 MB |
+| `StringStream(json, Encoding.UTF8)` | **4.13 ms** | **4.33 MB** |
 
-### JSON Lines (exemple 11) : 10 000 événements
+### JSON Lines (example 11): 10,000 events
 
-| Méthode | Temps | Mémoire |
+| Method | Time | Memory |
 |---|---:|---:|
-| boucle `SerializeAsync` + `\n` | 1,48 ms | 4,21 Mo |
-| `SerializeAsyncEnumerable(…, topLevelValues: true)` | **1,22 ms** | **2,38 Mo** |
+| `SerializeAsync` loop + `\n` | 1.26 ms | 3.21 MB |
+| `SerializeAsyncEnumerable(…, topLevelValues: true)` | **1.04 ms** | **1.38 MB** |
 
-### Comparateurs (exemple 14) : `Distinct` sur 10 000 contacts
+### Comparers (example 14): `Distinct` over 10,000 contacts
 
-| Méthode | Temps | Mémoire |
+| Method | Time | Memory |
 |---|---:|---:|
-| classe `IEqualityComparer<Contact>` | 262 µs | 197,6 Ko |
-| `EqualityComparer<Contact>.Create(c => c?.Email, …)` | 280 µs (±24) | 197,6 Ko |
+| `IEqualityComparer<Contact>` class | 266 µs | 197.6 KB |
+| `EqualityComparer<Contact>.Create(c => c?.Email, …)` | 270 µs | 197.6 KB |
 
 ---
 
-## 5. Non couvert ici
+## 5. Not covered here
 
-- **Runtime Async** : voir [RuntimeAsyncDemo](https://github.com/drangoht/RuntimeAsyncDemo).
-- **JIT et runtime** : élimination de vérifications de bornes, dévirtualisation, AVX-VNNI-512, rapports de plantage
-  en processus sous Linux, plancher matériel x86-64-v2. Gains automatiques, sans code à écrire.
-- **ASP.NET Core 11, EF Core 11, .NET MAUI** (CoreCLR par défaut) : hors du périmètre de ce dépôt.
-- **Autres API** non illustrées : `Process.Signal`, `SafeProcessHandle`, `Dns.ResolveSrv/Mx/Txt`, `X25519DiffieHellman`,
-  `Aes.EncryptKeyWrap`, validation asynchrone (`AsyncValidationAttribute`), métriques de `MemoryCache`, mots de passe
-  ZIP, format GNU pour `TarFile`, `CborReader` incrémental, vecteurs SIMD (`Vector128.Zip`…).
+- **Runtime Async**: see [RuntimeAsyncDemo](https://github.com/drangoht/RuntimeAsyncDemo).
+- **JIT and runtime**: bounds-check elimination, devirtualization, AVX-VNNI-512, in-process crash reports on Linux,
+  x86-64-v2 hardware baseline. Automatic gains, no code to write.
+- **ASP.NET Core 11, EF Core 11, .NET MAUI** (CoreCLR by default): outside the scope of this repository.
+- **Other APIs** not illustrated: `Process.Signal`, `SafeProcessHandle`, `Dns.ResolveSrv/Mx/Txt`, `X25519DiffieHellman`,
+  `Aes.EncryptKeyWrap`, async validation (`AsyncValidationAttribute`), `MemoryCache` metrics, ZIP passwords, GNU
+  format for `TarFile`, incremental `CborReader`, SIMD vectors (`Vector128.Zip`…).
 
 ---
 
@@ -181,30 +185,32 @@ larges : relancez sans `--job short` pour des chiffres définitifs.
 
 ```
 NouveautesDotNet11/
-├── Directory.Build.props        net11.0 pour tous les projets, CS8509 (switch incomplet) passé en erreur
-├── global.json                  SDK .NET 11 (11.0.100, version finale)
-├── verifier.ps1                 Lance tous les exemples, s'arrête au premier échec
-├── docs/                        Une fiche par exemple (01 à 16)
-├── appli-fichier/               Exemple 16 : application en un fichier avec #:include
-│   ├── rapport.cs
-│   ├── modeles.cs
-│   └── outils/formatage.cs
+├── Directory.Build.props        net11.0 for every project, CS8509 (incomplete switch) turned into an error
+├── global.json                  .NET 11 SDK (11.0.100, final release)
+├── verify.ps1                   Runs every example, stops at the first failure
+├── docs/
+│   ├── en/                      One sheet per example (01 to 16), in English
+│   └── fr/                      The same sheets in French
+├── file-based-app/              Example 16: file-based app with #:include
+│   ├── report.cs
+│   ├── models.cs
+│   └── tools/formatting.cs
 └── src/
-    ├── NouveautesDotNet11.Exemples/          Exemples 01 à 14, lançables un par un
-    │   ├── Program.cs                        Sommaire et choix de l'exemple
-    │   ├── Affichage.cs                      Titres, ✓ / ✗, compteur d'échecs
-    │   ├── Donnees.cs                        Jeu de données reproductible (commandes, catalogue)
-    │   └── Exemples/E01_Unions.cs … E14_Comparateurs.cs
-    ├── NouveautesDotNet11.SecuriteMemoire/   Exemple 15 (LangVersion preview, projet isolé)
-    └── NouveautesDotNet11.Benchmarks/        BenchmarkDotNet 0.16 preview (la 0.15.8 ne reconnaît pas .NET 11)
+    ├── DotNet11Features.Examples/         Examples 01 to 14, runnable one by one
+    │   ├── Program.cs                     Table of contents and example selection
+    │   ├── Display.cs                     Titles, ✓ / ✗, failure counter
+    │   ├── Data.cs                        Reproducible data set (orders, catalog)
+    │   └── Examples/E01_Unions.cs … E14_Comparers.cs
+    ├── DotNet11Features.MemorySafety/     Example 15 (LangVersion preview, isolated project)
+    └── DotNet11Features.Benchmarks/       BenchmarkDotNet 0.16 preview (0.15.8 does not recognize .NET 11)
 ```
 
 ## Sources
 
 - [What's new in .NET 11](https://learn.microsoft.com/dotnet/core/whats-new/dotnet-11/overview) ·
-  [bibliothèques](https://learn.microsoft.com/dotnet/core/whats-new/dotnet-11/libraries) ·
+  [libraries](https://learn.microsoft.com/dotnet/core/whats-new/dotnet-11/libraries) ·
   [runtime](https://learn.microsoft.com/dotnet/core/whats-new/dotnet-11/runtime) ·
   [SDK](https://learn.microsoft.com/dotnet/core/whats-new/dotnet-11/sdk)
 - [What's new in C# 15](https://learn.microsoft.com/dotnet/csharp/whats-new/csharp-15)
 
-Licence MIT.
+MIT License.

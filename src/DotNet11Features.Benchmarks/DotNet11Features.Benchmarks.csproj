@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>DotNet11Features.Benchmarks</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 0.16 preview: 0.15.8 does not recognize .NET 11 yet -->
+    <PackageReference Include="BenchmarkDotNet" Version="0.16.0-preview.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotNet11Features.Examples\DotNet11Features.Examples.csproj" />
+  </ItemGroup>
+
+</Project>
