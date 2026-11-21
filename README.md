@@ -2,6 +2,10 @@
 
 🇫🇷 [Version française](README.fr.md)
 
+🔗 **Related repositories**: [RuntimeAsyncDemo](https://github.com/drangoht/RuntimeAsyncDemo) (Runtime Async in
+.NET 11: state machine versus runtime, benchmarks) · [ArchitecturesDemo](https://github.com/drangoht/ArchitecturesDemo)
+(the same banking business implemented with 25 architectures in C# / .NET 10).
+
 Sixteen runnable examples, each with **the code from before**, **the .NET 11 code**, what really changes,
 measurements where relevant, and the pitfalls we hit while writing it.
 

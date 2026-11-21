@@ -2,6 +2,10 @@
 
 🇬🇧 [English version](README.md)
 
+🔗 **Dépôts liés** : [RuntimeAsyncDemo](https://github.com/drangoht/RuntimeAsyncDemo) (Runtime Async dans .NET 11 :
+machine à états contre runtime, benchmarks) · [ArchitecturesDemo](https://github.com/drangoht/ArchitecturesDemo)
+(le même métier bancaire implémenté avec 25 architectures en C# / .NET 10).
+
 Seize exemples exécutables, chacun avec **le code d'avant**, **le code .NET 11**, ce qui change vraiment, des
 mesures quand c'est pertinent, et les pièges rencontrés en l'écrivant.
 
