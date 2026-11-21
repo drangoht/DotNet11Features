@@ -1,4 +1,4 @@
-# NouveautesDotNet11 — les nouveautés de .NET 11 et C# 15, exemple par exemple
+# DotNet11Features — les nouveautés de .NET 11 et C# 15, exemple par exemple
 
 🇬🇧 [English version](README.md)
 
@@ -185,7 +185,7 @@ des marges d'erreur larges : relancez sans `--job short` pour des chiffres défi
 ## Structure
 
 ```
-NouveautesDotNet11/
+DotNet11Features/
 ├── Directory.Build.props        net11.0 pour tous les projets, CS8509 (switch incomplet) passé en erreur
 ├── global.json                  SDK .NET 11 (11.0.100, version finale)
 ├── verify.ps1                   Lance tous les exemples, s'arrête au premier échec
